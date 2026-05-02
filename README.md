@@ -51,7 +51,6 @@ The system integrates **Deep Learning (LSTM)** for demand forecasting, **XGBoost
 <p align="center">
   <img src="images/xgboost_graph.png" width="700">
 </p>
----
 
 ### 📊 System Architecture
 
@@ -59,14 +58,12 @@ The system integrates **Deep Learning (LSTM)** for demand forecasting, **XGBoost
   <img src="images/architecture.jpg" width="700">
 </p>
 
---- 
 ## 🔄 System Workflow
 
 <p align="center">
   <img src="images/flowchart.jpg" width="700">
 </p>
 
----
 
 1. User logs into the system (Admin / Hospital / Donor / Blood Bank)
 2. Data is stored and synchronized in Firebase Realtime Database
