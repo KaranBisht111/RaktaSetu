@@ -1,0 +1,88 @@
+
+### 🔧 Requirements & Configuration (How to Setup)
+
+
+Flask==2.3.2
+numpy==1.24.3
+pandas==2.0.3
+scikit-learn==1.3.0
+tensorflow==2.13.0
+xgboost==1.7.6
+matplotlib==3.7.2
+seaborn==0.12.2
+firebase-admin==6.2.0
+python-dotenv==1.0.0
+requests==2.31.0
+gunicorn==21.2.0
+
+
+
+1. **Install Dependencies**
+   Open terminal in project folder and run:
+   `pip install -r requirements.txt`
+   This will install all required libraries.
+
+---
+
+2. **Setup Firebase (Frontend)**
+
+   * Go to Firebase Console
+   * Open your project → Project Settings
+   * Copy the Firebase SDK configuration
+   * Paste it inside:
+     `frontend/firebase-config.js`
+   * Replace all empty fields with your project values
+
+---
+
+3. **Setup Firebase Service Account (Backend)**
+
+   * Go to Firebase Console → Project Settings → Service Accounts
+   * Click **Generate New Private Key**
+   * Download the JSON file
+   * Rename it to:
+     `serviceAccountKey.json`
+   * Place it in the project root folder
+
+---
+
+4. **Update Backend Configuration**
+
+   * Open: `backend/config.py`
+   * Add your Firebase database URL
+   * Ensure paths for models (`.h5`, `.pkl`) are correct
+
+---
+
+5. **Use Environment Variables (Recommended)**
+
+   * Create a `.env` file in root
+   * Add:
+
+     ```
+     SECRET_KEY=your_secret_key
+     FIREBASE_DB_URL=your_database_url
+     FIREBASE_CONFIG_PATH=serviceAccountKey.json
+     ```
+   * This keeps sensitive data secure
+
+---
+
+6. **Check Machine Learning Models**
+
+   * Ensure these files exist:
+
+     * LSTM model (`.h5`)
+     * XGBoost model (`.pkl`)
+   * If not, run training script to generate them
+
+---
+
+7. **Run the Project**
+   Start the server using:
+   `python app.py`
+   Then open browser at:
+   `http://127.0.0.1:5000`
+
+---
+
