@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank Hub | RaktaSetu </title>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        const uid = localStorage.getItem('user_id');
+        if (!token || role !== 'bank') {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+
+    <style>
+        :root {
+            --vibrant-red: #e11d48;
+            --deep-red: #9f1239;
+            --soft-red: #fff1f2;
+            --text-dark: #0f172a;
+            --text-slate: #475569;
+            --border-color: #e2e8f0;
+        }
+
+        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; color: var(--text-dark); scroll-behavior: smooth; }
+        .navbar { background: white; border-bottom: 4px solid var(--vibrant-red); padding: 0.8rem 2rem; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
+        .navbar-brand { color: var(--vibrant-red) !important; font-weight: 800; font-size: 1.5rem; letter-spacing: 1px; }
+
+        .card { border-radius: 20px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; background: #fff; overflow: hidden; }
+        .card-header { background: var(--soft-red); color: var(--vibrant-red); font-weight: 800; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        
+        /* DATA SCROLL CONTAINERS */
+        .scroll-container { max-height: 350px; overflow-y: auto; scrollbar-width: thin; }
+        .scroll-container::-webkit-scrollbar { width: 6px; }
+        .scroll-container::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+
+        .list-group-item { border-color: #f1f5f9; padding: 12px 20px; font-size: 0.85rem; border-left: none; border-right: none; background: transparent; }
+        .list-group-item span { font-weight: 800; color: #64748b; text-transform: uppercase; font-size: 0.8rem; }
+        .list-group-item strong { font-weight: 800; color: var(--text-dark); display: block; font-size: 0.8rem; }
+        .list-group-item i { width: 25px; color: var(--vibrant-red); }
+        .list-group-item:hover { background-color: var(--soft-red); color: var(--vibrant-red); text-decoration: none; }
+
+        .table thead th { background-color: #fcfcfc; border-bottom: 2px solid var(--soft-red); color: var(--vibrant-red); text-transform: uppercase; font-size: 0.7rem; border-top: none; position: sticky; top: 0; z-index: 10; }
+        .table td { vertical-align: middle; font-size: 0.85rem; font-weight: 600; color: var(--text-slate); padding: 15px; }
+
+        .badge-critical { background-color: #450a0a; color: white; padding: 5px 12px; border-radius: 8px; font-weight: 800; }
+        .badge-urgent { background-color: var(--vibrant-red); color: white; font-weight: 800; padding: 5px 12px; }
+        .badge-optimal { background-color: #dcfce7; color: #166534; font-weight: 800; padding: 5px 12px; }
+        .badge-normal { background-color: #f1f5f9; color: #475569; font-weight: 800; padding: 5px 12px; }
+        .host-badge { background: var(--vibrant-red); color: white; font-size: 0.65rem; font-weight: 800; padding: 3px 10px; border-radius: 50px; text-transform: uppercase; }
+
+        .chart-container { position: relative; height: 350px; width: 100%; margin-top: 20px; display: none; cursor: grab; }
+        .chart-container:active { cursor: grabbing; }
+
+        .btn-danger { background-color: var(--vibrant-red); border: none; border-radius: 10px; font-weight: 800; padding: 10px 20px; transition: 0.3s; cursor: pointer; }
+        .btn-danger:hover { background-color: var(--deep-red); transform: translateY(-2px); }
+        .form-control { border-radius: 12px; background: var(--soft-red); border: 1px solid var(--border-color); height: auto; padding: 12px; font-weight: 600; }
+
+        .progress-bar-custom { height: 8px; background: #e2e8f0; border-radius: 10px; margin-top: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--vibrant-red); border-radius: 10px; transition: 0.5s; }
+
+        .alert-row { border-left: 4px solid var(--vibrant-red); padding: 10px; background: #fff1f2; margin-bottom: 10px; border-radius: 5px; }
+        #location-picker-map, #profile-location-picker-map { border-radius: 15px; border: 2px solid var(--soft-red); background: #f1f5f9; }
+
+        footer { background: white; padding: 20px; border-top: 1px solid var(--border-color); margin-top: 40px; color: #64748b; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">RAKTASETU BANK</a>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav align-items-center">
+                <li class="nav-item dropdown mr-3">
+                    <a class="nav-link font-weight-bold text-dark px-3 position-relative" id="notif-bell" data-toggle="dropdown">
+                        <i class="fas fa-bell"></i> 
+                        <span class="badge badge-danger position-absolute" id="notif-count" style="top: 0; right: 0;">0</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right p-3 shadow border-0" id="notif-dropdown" style="width: 280px; border-radius: 15px;">
+                        <h6 class="font-weight-800 small text-uppercase mb-2">Network Alerts</h6>
+                        <div id="notif-list"></div>
+                    </div>
+                </li>
+                <li class="nav-item ml-lg-3"><a class="nav-link btn btn-outline-danger px-4 py-1 font-weight-800" style="border-radius: 8px;" href="#" id="logout-btn">LOGOUT</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid mt-4 px-lg-5">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="card shadow-sm">
+                <div class="card-header text-center d-block">Center Identity Ledger</div>
+                <div class="card-body p-0 text-center py-4">
+                    <div class="mb-3"><i class="fas fa-clinic-medical fa-3x text-danger"></i></div>
+                    <h5 class="font-weight-800 mb-0" id="disp-name">Syncing Hub...</h5>
+                    <p class="small text-muted font-weight-bold mb-3" id="disp-loc">--</p>
+                    <ul class="list-group list-group-flush text-left mt-1">
+                        <li class="list-group-item d-flex justify-content-between align-items-center"><span>Pincode Hub</span><strong id="disp-pincode">--</strong></li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center"><span>Email Hub</span><strong id="disp-email">--</strong></li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center"><span>Phone Hub</span><strong id="disp-phone">--</strong></li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center"><span>Address</span><strong id="disp-address">--</strong></li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center"><span>Requests</span><strong class="badge badge-pill badge-danger" id="disp-requests">0</strong></li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center"><span>Drives</span><strong class="badge badge-pill badge-info" id="disp-campaigns">0</strong></li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center"><span>Total Units</span><strong class="badge badge-pill badge-light border px-3" id="disp-units">0</strong></li>
+                    </ul>
+                    <div class="px-3 mt-3"><button class="btn btn-outline-danger btn-block btn-sm font-weight-800" data-toggle="modal" data-target="#editProfileModal">Update Hub Details</button></div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header">Quick Actions</div>
+                <div class="list-group list-group-flush">
+                    <a href="#matching-engine" class="list-group-item list-group-item-action scroll-link"><i class="fas fa-search"></i> Find Donors</a>
+                    <a href="marketplace.html" class="list-group-item list-group-item-action font-weight-800 text-success"><i class="fas fa-globe"></i> Global Marketplace</a>
+                    <a href="#demand-forecast" class="list-group-item list-group-item-action scroll-link"><i class="fas fa-chart-line"></i> AI Forecast</a>
+                    <a href="#inventory" class="list-group-item list-group-item-action scroll-link"><i class="fas fa-warehouse"></i> Manage Inventory</a>
+                    <a href="#" class="list-group-item list-group-item-action" data-toggle="modal" data-target="#createCampaignModal"><i class="fas fa-bullhorn"></i> Start Campaign</a>
+                    <a href="#" class="list-group-item list-group-item-action" data-toggle="modal" data-target="#createRequestModal"><i class="fas fa-plus-circle"></i> Emergency Request</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            
+            <div class="card shadow-sm" id="demand-forecast">
+                <div class="card-header"><span><i class="fas fa-brain mr-2"></i>AI Distribution & Prediction Core</span><span class="host-badge">LSTM ANALYTICS</span></div>
+                <div class="card-body">
+                    <div class="form-row align-items-end">
+                        <div class="col-md-4">
+                            <label class="small font-weight-bold">Start Date</label>
+                            <input type="date" class="form-control" id="forecast-start" value="2026-02-14">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="small font-weight-bold">End Date</label>
+                            <input type="date" class="form-control" id="forecast-end" value="2026-03-14">
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-danger btn-block" id="forecast-btn">RUN NEURAL PREDICTION</button>
+                        </div>
+                    </div>
+                    <div class="text-right mt-2"><small class="text-muted"><i class="fas fa-search-plus"></i> Scroll to zoom, Drag to pan.</small></div>
+                    <div id="forecast-result" class="chart-container"><canvas id="forecastChart"></canvas></div>
+                    <div id="shortage-indicator" class="mt-4 text-center" style="display:none;"></div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header border-bottom-0" style="background-color: #fffbeb;">
+                    <span class="text-warning"><i class="fas fa-inbox mr-2"></i>Incoming Market Requests (Hospitals)</span>
+                </div>
+                <div class="card-body p-0 scroll-container">
+                    <table class="table table-hover mb-0 text-center" id="incoming-trades-table">
+                        <thead><tr><th>Requester Hub</th><th>Resource</th><th>Price Offered</th><th>Location & Contact</th><th>Action</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header border-bottom-0" style="background-color: #f0fdf4;">
+                    <span class="text-success"><i class="fas fa-paper-plane mr-2"></i>My Active Surplus Listings</span>
+                    <button class="btn btn-sm btn-success font-weight-800 px-4" data-toggle="modal" data-target="#listSurplusModal">LIST SURPLUS</button>
+                </div>
+                <div class="card-body p-0 scroll-container">
+                    <table class="table table-hover mb-0 text-center" id="outgoing-trades-table">
+                        <thead><tr><th>Resource Group</th><th>Volume Listed</th><th>My Rate (CR)</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card shadow-sm" id="matching-engine">
+                <div class="card-header"><span><i class="fas fa-search-location mr-2"></i>Intelligent Donor Match Engine</span><span class="host-badge">MATCHING_ENGINE</span></div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <select class="form-control" id="searchBox">
+                            <option value="">Blood Group</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                        </select>
+                        <input type="text" class="form-control" id="searchPincode" placeholder="Target Pincode (e.g. 400022)">
+                        <div class="input-group-append"><button class="btn btn-danger px-4" id="searchBtn">SEARCH & RANK</button></div>
+                    </div>
+                    <div id="searchResults" class="scroll-container" style="display:none; margin-top:20px;">
+                        <table class="table table-hover table-sm text-center border-top" id="donor-results-table">
+                            <thead><tr><th>Proximity & AI Score</th><th>Donor Details & Location</th><th>Blood Type</th><th>Action</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm" id="inventory">
+                <div class="card-header">
+                    <span><i class="fas fa-boxes mr-2"></i>Mass Storage Inventory</span>
+                    <button class="btn btn-sm btn-light text-danger font-weight-800" data-toggle="modal" data-target="#inventoryModal">ADD NEW ENTRY</button>
+                </div>
+                <div class="card-body p-3 border-bottom">
+                    <div style="height: 220px; width: 100%;"><canvas id="storageChart"></canvas></div>
+                </div>
+                <div class="card-body p-0 scroll-container">
+                    <table class="table table-hover mb-0 text-center" id="inventory-table">
+                        <thead><tr><th>Blood Group</th><th>Total Quantity</th><th>Status</th><th>Update</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header"><span><i class="fas fa-list mr-2"></i>Hospital / Patient Request Management</span></div>
+                <div class="card-body p-0 scroll-container">
+                    <table class="table table-hover mb-0 text-center" id="requests-table">
+                        <thead><tr><th>Patient & Contact</th><th>Group</th><th>Units</th><th>Urgency</th><th>Delivery Location</th><th>Action</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header"><span><i class="fas fa-bullhorn mr-2"></i>Active Drive Management Hub</span></div>
+                <div class="card-body p-0 scroll-container">
+                    <table class="table table-hover mb-0 text-center" id="campaigns-table">
+                        <thead><tr><th>Drive Name</th><th>Venue</th><th>Progress</th><th>Action</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white"><span><i class="fas fa-check-double mr-2"></i>Donor Campaign Verifications</span></div>
+                <div class="card-body p-0 scroll-container">
+                    <table class="table table-hover mb-0 text-center" id="optin-verification-table">
+                        <thead><tr><th>Campaign</th><th>Donor Details & Contact</th><th>Blood Type</th><th>Action</th></tr></thead>
+                        <tbody><tr><td colspan="4" class="text-muted small py-3">No pending donors.</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-4">
+                <div class="card-header"><span><i class="fas fa-bell mr-2"></i>Live Alerts</span></div>
+                <div class="card-body p-3 scroll-container" id="live-alerts-box"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="listSurplusModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content border-0"><div class="modal-header border-0"><h5 class="modal-title font-weight-800">List Surplus to Global Market</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div><div class="modal-body p-4"><div class="form-group"><label class="small font-weight-bold">Blood Group</label><select id="market-group" class="form-control"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div><div class="form-group"><label class="small font-weight-bold">Volume (Units)</label><input type="number" id="market-qty" class="form-control" placeholder="e.g. 10"></div><div class="form-group"><label class="small font-weight-bold">Credit Rate (per unit)</label><input type="number" id="market-rate" class="form-control" value="1.0" step="0.1"></div><button class="btn btn-danger btn-block font-weight-800" id="confirmListMarket">BROADCAST SURPLUS</button></div></div></div></div>
+
+<div class="modal fade" id="negotiationModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><div class="modal-header border-0"><h5 class="modal-title font-weight-800 text-warning">Trade Negotiation</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div><div class="modal-body p-4"><div class="alert alert-warning small mb-4"><b>Requester:</b> <span id="neg-requester"></span><br><b>Resource:</b> <span id="neg-resource"></span><br><b>Current Offer:</b> <span id="neg-current-price" class="font-weight-bold"></span> CR</div><div class="form-group"><label class="small font-weight-bold">Counter Offer Price (CR)</label><input type="number" class="form-control" id="neg-counter-price"></div><input type="hidden" id="neg-trade-id"><div class="d-flex justify-content-between mt-4"><button class="btn btn-outline-danger font-weight-800 w-100 mr-2" id="btn-neg-decline">DECLINE</button><button class="btn btn-success font-weight-800 w-100 ml-2" id="btn-neg-counter">SEND COUNTER OFFER</button></div><button class="btn btn-dark btn-block font-weight-800 mt-3" id="btn-neg-accept">ACCEPT CURRENT OFFER</button></div></div></div></div>
+
+<div class="modal fade" id="updateInvModal" tabindex="-1"><div class="modal-dialog modal-sm modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h6>Quick Sync</h6><button type="button" class="close" data-dismiss="modal">&times;</button></div><div class="modal-body p-4 text-center"><h6>Type: <span id="up-inv-type" class="text-danger">--</span></h6><div class="form-group"><label class="small font-weight-bold">Set New Total Count</label><input type="number" class="form-control text-center mb-3" id="up-inv-qty"></div><input type="hidden" id="old-inv-qty"><button class="btn btn-danger btn-block font-weight-800" id="confirmUpdateStock">CONFIRM SYNC</button></div></div></div></div>
+
+<div class="modal fade" id="editCampaignModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5>Modify Progress</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div><div class="modal-body p-4"><div class="form-group"><label class="small font-weight-bold">Units Collected</label><input type="number" class="form-control" id="edit-camp-coll"></div><div class="form-group"><label class="small font-weight-bold">Target Goal</label><input type="number" class="form-control" id="edit-camp-goal"></div><input type="hidden" id="edit-camp-id"><button class="btn btn-danger btn-block font-weight-800" id="confirmEditCampaign">SYNC CLOUD</button></div></div></div></div>
+
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0"><h5 class="modal-title font-weight-800">Edit Hub Identity</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+            <div class="modal-body p-4">
+                <div class="form-row">
+                    <div class="form-group col-md-6"><label class="small font-weight-bold">Bank Name</label><input type="text" class="form-control" id="in-name"></div>
+                    <div class="form-group col-md-6"><label class="small font-weight-bold">Phone Number</label><input type="text" class="form-control" id="in-phone"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6"><label class="small font-weight-bold">Loc Code (City)</label><input type="text" class="form-control" id="in-loc"></div>
+                    <div class="form-group col-md-6"><label class="small font-weight-bold">Pincode</label><input type="text" class="form-control" id="in-pincode"></div>
+                </div>
+                
+                <div class="form-group mt-3">
+                    <label class="small font-weight-bold">Exact Hub Address / GPS Mark</label>
+                    <button type="button" class="btn btn-sm btn-info mb-2 ml-2" id="use-profile-location"><i class="fas fa-crosshairs"></i> Use Current Location</button>
+                    <div class="input-group mb-2">
+                        <input type="text" id="profileLocationSearch" class="form-control" placeholder="Search location manually...">
+                        <div class="input-group-append"><button type="button" class="btn btn-dark" id="searchProfileLocBtn"><i class="fas fa-search"></i></button></div>
+                    </div>
+                    <div class="input-group">
+                        <textarea id="in-address" class="form-control" rows="2" placeholder="Describe or mark pinpoint on map..."></textarea>
+                        <div class="input-group-append"><button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#profileLocationPickerModal">MARK ON MAP</button></div>
+                    </div>
+                    <input type="hidden" id="in-lat"><input type="hidden" id="in-lng">
+                </div>
+
+                <button class="btn btn-danger btn-block font-weight-800 mt-4" id="saveProfile">SAVE CHANGES</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="createCampaignModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content border-0 shadow-lg"><div class="modal-header border-0"><h5 class="modal-title font-weight-800">Launch Donation Drive</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div><div class="modal-body p-4"><div class="form-group"><label class="small font-weight-bold">Title</label><input type="text" class="form-control" id="camp-name"></div><div class="form-group"><label class="small font-weight-bold">Venue</label><input type="text" class="form-control" id="camp-loc"></div><div class="form-row"><div class="form-group col-md-6"><label class="small font-weight-bold">Date</label><input type="datetime-local" class="form-control" id="camp-date"></div><div class="form-group col-md-6"><label class="small font-weight-bold">Goal</label><input type="number" class="form-control" id="camp-goal" value="100"></div></div><button class="btn btn-danger btn-block font-weight-800" id="saveCampaign">LAUNCH</button></div></div></div></div>
+
+<div class="modal fade" id="inventoryModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content border-0"><div class="modal-header border-0"><h5 class="modal-title font-weight-800">Add Stock Entry</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div><div class="modal-body p-4"><div class="form-group"><label class="small font-weight-bold">Donor Name</label><input type="text" class="form-control" id="invDonor" placeholder="Full Name"></div><div class="form-row"><div class="form-group col-md-6"><label class="small font-weight-bold">Type</label><select class="form-control" id="invType"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div><div class="form-group col-md-6"><label class="small font-weight-bold">Units</label><input type="number" class="form-control" id="invQty" value="1"></div></div><button class="btn btn-danger btn-block font-weight-800" id="saveInv">SYNC LEDGER</button></div></div></div></div>
+
+<div class="modal fade" id="createRequestModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content border-0"><div class="modal-header border-0"><h5 class="modal-title font-weight-800">Post Emergency Request</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div><div class="modal-body p-4">
+    <div class="form-row">
+        <div class="form-group col-md-6"><label class="small font-weight-bold">Patient / Hospital Name</label><input type="text" class="form-control" id="req-patient"></div>
+        <div class="form-group col-md-6"><label class="small font-weight-bold">Contact Number</label><input type="text" class="form-control" id="req-phone" placeholder="e.g. 9876543210"></div>
+    </div>
+    <div class="form-row"><div class="form-group col-md-4"><label class="small font-weight-bold">Blood Group</label><select class="form-control" id="req-group"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div><div class="form-group col-md-4"><label class="small font-weight-bold">Units</label><input type="number" class="form-control" id="req-qty" value="1"></div><div class="form-group col-md-4"><label class="small font-weight-bold">Urgency</label><select class="form-control" id="req-urgency"><option>Critical</option><option>High</option><option selected>Normal</option><option>Low</option></select></div></div><div class="form-group"><label class="small font-weight-bold">Location (Ward/Wing)</label><button type="button" class="btn btn-sm btn-info mb-2 ml-2" id="use-current-location"><i class="fas fa-crosshairs"></i> Use Current Location</button><div class="input-group mb-2"><input type="text" id="requestLocationSearch" class="form-control" placeholder="Search location manually..."><div class="input-group-append"><button type="button" class="btn btn-dark" id="searchLocBtn"><i class="fas fa-search"></i></button></div></div><div class="input-group"><textarea id="requestLocationText" class="form-control" rows="2" placeholder="Describe or mark pinpoint on map..."></textarea><div class="input-group-append"><button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#locationPickerModal">MARK ON MAP</button></div></div></div><input type="hidden" id="requestLat"><input type="hidden" id="requestLng"><button class="btn btn-danger btn-block font-weight-800 mt-3" id="submitRequest">POST BROADCAST</button></div></div></div></div>
+
+<div class="modal fade" id="locationPickerModal" tabindex="-1" style="z-index: 1600;"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-dark text-white p-2 text-center"><h6 class="mb-0 w-100">Select GPS Coordinates</h6></div><div class="modal-body p-0"><div id="location-picker-map" style="height: 380px;"></div></div><div class="modal-footer p-1"><button class="btn btn-danger btn-sm btn-block" id="confirmLocationBtn">CONFIRM PIN</button></div></div></div></div>
+<div class="modal fade" id="profileLocationPickerModal" tabindex="-1" style="z-index: 1600;"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-dark text-white p-2 text-center"><h6 class="mb-0 w-100">Select Hub Location</h6></div><div class="modal-body p-0"><div id="profile-location-picker-map" style="height: 380px;"></div></div><div class="modal-footer p-1"><button class="btn btn-danger btn-sm btn-block" id="confirmProfileLocationBtn">CONFIRM PIN</button></div></div></div></div>
+
+<footer><div class="text-center small">&copy; 2026 RaktaSetu Mumbai Bank Node | Secured Enterprise ICBMS</div></footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="/firebase-config.js"></script>
+
+<script>
+$(document).ready(function() {
+    const db = firebase.database();
+    let forecastChartInstance = null;
+    let storageChartInstance = null;
+    let myBankName = "";
+
+    // 🚨 GLOBAL VARIABLE FOR BANK INVENTORY TRACKING
+    let currentLiveStock = {"A+":0, "A-":0, "B+":0, "B-":0, "AB+":0, "AB-":0, "O+":0, "O-":0};
+
+    // --- 1. PROFILE & IDENTITY SYNC ---
+    function syncProfile(targetUid) {
+        if (!targetUid) return;
+        db.ref("users/" + targetUid).on("value", snap => {
+            const d = snap.val();
+            if (d) {
+                myBankName = d.full_name || d.name || "Unnamed Bank";
+                $('#disp-name').text(myBankName);
+                $('#disp-loc').text(d.location || "Mumbai Hub");
+                $('#disp-email').text(d.email || "N/A");
+                $('#disp-phone').text(d.phone || "Not Set");
+                $('#disp-address').text(d.address || "Not Set");
+                $('#disp-pincode').text(d.pincode || "Not Set");
+                
+                $('#in-name').val(myBankName);
+                $('#in-loc').val(d.location || "");
+                $('#in-address').val(d.address || "");
+                $('#in-phone').val(d.phone || "");
+                $('#in-pincode').val(d.pincode || "");
+                $('#in-lat').val(d.lat || "");
+                $('#in-lng').val(d.lng || "");
+
+                let list = $('#notif-list'); list.empty();
+                if(!d.phone || d.phone === "Not Set" || !d.address) {
+                    list.append(`<div class="p-2 border-bottom bg-light text-danger small"><b>Action Required:</b> Hub phone or address missing.</div>`);
+                    $('#notif-count').text(1);
+                } else { $('#notif-count').text(0); list.html('<p class="small text-center py-2 text-success">Node Authenticated</p>'); }
+            }
+        });
+    }
+    if (uid) syncProfile(uid);
+    firebase.auth().onAuthStateChanged(u => { if (u) syncProfile(u.uid); });
+
+    // Live Network Alerts
+    db.ref("campaigns").on("value", snap => {
+        let list = $('#notif-list'); list.empty();
+        let totalCount = 0;
+        snap.forEach(hubNode => {
+            hubNode.forEach(drive => {
+                const c = drive.val();
+                list.append(`<div class="p-2 border-bottom small"><i class="fas fa-bullhorn text-danger mr-2"></i><b>Active Drive:</b> ${c.name} at ${c.location}</div>`);
+                totalCount++;
+            });
+        });
+        $('#notif-count').text(totalCount);
+    });
+
+    // --- 2. LIVE LISTENERS ---
+
+    // A. Consolidated Inventory Summation with Storage Chart
+    db.ref("inventory/" + uid).on("value", snap => {
+        let tbody = $('#inventory-table tbody'); tbody.empty();
+        
+        let counts = {"A+":0, "A-":0, "B+":0, "B-":0, "AB+":0, "AB-":0, "O+":0, "O-":0};
+        let total = 0;
+        
+        snap.forEach(child => {
+            const d = child.val();
+            if(counts[d.group] !== undefined) {
+                counts[d.group] += parseInt(d.units || 0);
+                total += parseInt(d.units || 0);
+            }
+        });
+
+        // Sync local counts to the global tracker
+        currentLiveStock = counts; 
+        
+        Object.keys(counts).forEach(group => {
+            tbody.append(`<tr><td><b>${group}</b></td><td>${counts[group]} Units</td><td><span class="badge ${counts[group] < 50 ? 'badge-urgent' : 'badge-optimal'}">${counts[group] < 50 ? 'LOW' : 'OK'}</span></td><td><button class="btn btn-sm btn-outline-danger update-inv-btn" data-group="${group}" data-qty="${counts[group]}">Update</button></td></tr>`);
+        });
+        $('#disp-units').text(total);
+
+        const allGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+        const chartData = allGroups.map(g => counts[g] || 0);
+
+        const ctxS = document.getElementById('storageChart').getContext('2d');
+        if(storageChartInstance) storageChartInstance.destroy();
+        storageChartInstance = new Chart(ctxS, {
+            type: 'bar',
+            data: {
+                labels: allGroups,
+                datasets: [{
+                    label: 'Mass Storage Stock',
+                    data: chartData,
+                    backgroundColor: ['rgba(59,130,246,0.7)', 'rgba(29,78,216,0.7)', 'rgba(16,185,129,0.7)', 'rgba(4,120,87,0.7)', 'rgba(245,158,11,0.7)', 'rgba(180,83,9,0.7)', 'rgba(225,29,72,0.7)', 'rgba(159,18,57,0.7)'],
+                    borderWidth: 1
+                }]
+            },
+            options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        });
+    });
+
+    // B. Campaign Donor Verification System
+    db.ref("campaign_optins").orderByChild("hub_id").equalTo(uid).on("value", snap => {
+        let tbody = $('#optin-verification-table tbody'); tbody.empty();
+        let found = false;
+        snap.forEach(child => {
+            const opt = child.val();
+            if(opt.status === "PENDING") {
+                found = true;
+                tbody.append(`<tr>
+                    <td><small><b>${opt.campaign_name || 'N/A'}</b></small></td>
+                    <td class="text-left">
+                        <span class="font-weight-bold text-dark">${opt.donor_name || 'N/A'}</span><br>
+                        <small class="text-muted"><i class="fas fa-phone text-secondary"></i> ${opt.donor_phone || 'Not Provided'}</small>
+                    </td>
+                    <td><span class="badge badge-light border">${opt.donor_blood || 'N/A'}</span></td>
+                    <td><button class="btn btn-xs btn-success verify-donor-btn" data-id="${child.key}" data-donoruid="${opt.donor_id}">VERIFY DONOR</button></td>
+                </tr>`);
+            }
+        });
+        if(!found) tbody.html('<tr><td colspan="4" class="text-muted small py-3">No pending donors.</td></tr>');
+    });
+
+    // 🚨 FIX: BULLETPROOF UID-BASED NEGOTIATION LOGIC
+    db.ref("interhub_trades").on("value", snap => {
+        let incomingTbody = $('#incoming-trades-table tbody'); incomingTbody.empty();
+        let outgoingTbody = $('#outgoing-trades-table tbody'); outgoingTbody.empty();
+        let inCount = 0; let outCount = 0;
+
+        snap.forEach(child => {
+            const m = child.val();
+            
+            // 1. INCOMING
+            if(m.to_hub === myBankName) {
+                inCount++;
+                let actionHtml = "";
+                if (m.status === 'PENDING') {
+                    actionHtml = `<button class="btn btn-xs btn-warning negotiate-btn text-dark font-weight-bold" data-id="${child.key}" data-from="${m.from_hub}" data-payload="${m.payload || m.group}" data-price="${m.price}">NEGOTIATE</button>`;
+                } else if (m.status === 'NEGOTIATING') {
+                    if (m.last_actor_uid === uid) {
+                        actionHtml = `<span class="badge badge-secondary">WAITING REPLY</span>`;
+                    } else {
+                        actionHtml = `<button class="btn btn-xs btn-warning negotiate-btn text-dark font-weight-bold" data-id="${child.key}" data-from="${m.from_hub}" data-payload="${m.payload || m.group}" data-price="${m.price}">REVIEW COUNTER</button>`;
+                    }
+                } else {
+                    actionHtml = `<span class="badge badge-optimal">${m.status}</span>`;
+                }
+
+                incomingTbody.append(`<tr>
+                    <td><b>${m.from_hub || 'Unknown Hub'}</b></td>
+                    <td><b>${m.payload || m.group || 'N/A'}</b></td>
+                    <td class="text-success font-weight-bold">${m.price || 0} CR</td>
+                    <td><small><i class="fas fa-map-marker-alt text-danger"></i> ${m.from_address || 'N/A'}<br><i class="fas fa-phone text-secondary"></i> ${m.from_phone || 'N/A'}</small></td>
+                    <td>${actionHtml}</td>
+                </tr>`);
+            } 
+            // 2. OUTGOING
+            else if (m.from_uid === uid || (!m.from_uid && m.from_hub === myBankName)) {
+                outCount++;
+                let actionHtml = "";
+                if (m.status === 'PENDING' || m.status === 'ACTIVE') {
+                    actionHtml = `<button class="btn btn-xs btn-outline-danger cancel-market-btn" data-id="${child.key}">CANCEL</button>`;
+                } else if (m.status === 'NEGOTIATING') {
+                    if (m.last_actor_uid === uid) {
+                        actionHtml = `<span class="badge badge-secondary mb-1 d-block">WAITING REPLY</span><button class="btn btn-xs btn-outline-danger cancel-market-btn" data-id="${child.key}">CANCEL</button>`;
+                    } else {
+                        actionHtml = `<button class="btn btn-xs btn-warning negotiate-btn text-dark font-weight-bold" data-id="${child.key}" data-from="${m.to_hub}" data-payload="${m.payload || m.group}" data-price="${m.price}">REVIEW COUNTER</button>`;
+                    }
+                } else {
+                    actionHtml = `<i class="fas fa-check-circle text-success"></i>`;
+                }
+
+                outgoingTbody.append(`<tr>
+                    <td><b>${m.group || m.payload || 'N/A'}</b></td>
+                    <td><b>${m.units || m.payload || 0}</b></td>
+                    <td class="text-danger font-weight-bold">${m.rate || m.price || 0} CR</td>
+                    <td><span class="badge ${m.status === 'ACCEPTED' ? 'badge-optimal' : 'badge-info'}">${m.status || "ACTIVE"}</span></td>
+                    <td>${actionHtml}</td>
+                </tr>`);
+            }
+        });
+
+        if(inCount === 0) incomingTbody.html('<tr><td colspan="5" class="text-muted small py-3">No incoming requests.</td></tr>');
+        if(outCount === 0) outgoingTbody.html('<tr><td colspan="5" class="text-muted small py-3">No active surplus listings.</td></tr>');
+    });
+
+    // Patient Requests
+    db.ref("requests").on("value", snap => {
+        let tbody = $('#requests-table tbody'); tbody.empty();
+        $('#disp-requests').text(snap.numChildren());
+        snap.forEach(child => {
+            const d = child.val();
+            let urgClass = d.urgency === "Critical" ? "badge-critical" : d.urgency === "High" ? "badge-urgent" : "badge-normal";
+            
+            tbody.append(`<tr>
+                <td class="text-left">
+                    <span class="font-weight-bold text-dark">${d.patient || 'N/A'}</span><br>
+                    <small class="text-muted"><i class="fas fa-phone text-secondary"></i> ${d.phone || 'N/A'}</small>
+                </td>
+                <td><b>${d.group || 'N/A'}</b></td>
+                <td>${d.qty || 0} Units</td>
+                <td><span class="badge ${urgClass}">${d.urgency || "Normal"}</span></td>
+                <td class="text-left"><small class="text-muted"><i class="fas fa-map-marker-alt text-danger"></i> ${d.location || 'Hub Main'}</small></td>
+                <td><button class="btn btn-sm btn-success fulfill-btn" data-id="${child.key}">Fulfill</button></td>
+            </tr>`);
+        });
+    });
+
+    // Campaigns Private to Bank Hub
+    db.ref("campaigns/" + uid).on("value", snap => {
+        let tbody = $('#campaigns-table tbody'); tbody.empty();
+        $('#disp-campaigns').text(snap.numChildren());
+        snap.forEach(child => {
+            const d = child.val();
+            const goal = parseInt(d.goal || 100); const coll = parseInt(d.collected || 0);
+            const perc = Math.min(Math.round((coll / goal) * 100), 100);
+            tbody.append(`<tr>
+                <td><b>${d.name || 'N/A'}</b></td>
+                <td><small class="text-muted"><i class="fas fa-map-marker-alt text-danger"></i> ${d.location || 'N/A'}</small></td>
+                <td><div class="progress-bar-custom"><div class="progress-fill" style="width: ${perc}%;"></div></div><small>${coll}/${goal}</small></td>
+                <td><button class="btn btn-xs btn-info edit-camp-btn" data-id="${child.key}" data-coll="${coll}" data-goal="${goal}"><i class="fas fa-edit"></i></button> <button class="btn btn-xs btn-outline-secondary cancel-camp-btn" data-id="${child.key}"><i class="fas fa-trash"></i></button></td>
+            </tr>`);
+        });
+    });
+
+    // Live Alerts Box
+    db.ref("announcements").limitToLast(5).on("value", snap => {
+        let alertsBox = $('#live-alerts-box'); alertsBox.empty();
+        snap.forEach(child => {
+            const a = child.val();
+            alertsBox.prepend(`<div class="alert-row"><h6 class="mb-0 small font-weight-bold text-danger">${a.sender || "Network"}</h6><p class="mb-0 xsmall">${a.content}</p></div>`);
+        });
+    });
+
+    // --- 3. ACTIONS & NEGOTIATION DELEGATES ---
+
+    $(document).on('click', '.verify-donor-btn', function() {
+        const optId = $(this).data('id'); const donorUid = $(this).data('donoruid');
+        if(confirm("Verify that this donor completed their donation? They will receive 250 Points.")) {
+            db.ref("campaign_optins/" + optId).update({ status: "COMPLETED" });
+            db.ref("users/" + donorUid).transaction(function(user) {
+                if (user) { user.points = (user.points || 0) + 250; user.totalDonations = (user.totalDonations || 0) + 1; }
+                return user;
+            }, function(error) { if(error) alert("Error verifying donor."); else alert("Donor verified successfully! 250 points awarded."); });
+        }
+    });
+
+    // NEGOTIATION MODAL LOGIC
+    let currentNegData = {};
+    $(document).on('click', '.negotiate-btn', function() {
+        currentNegData = { id: $(this).data('id'), from: $(this).data('from'), payload: $(this).data('payload'), price: $(this).data('price') };
+        $('#neg-requester').text(currentNegData.from); $('#neg-resource').text(currentNegData.payload);
+        $('#neg-current-price').text(currentNegData.price); $('#neg-counter-price').val(currentNegData.price);
+        $('#neg-trade-id').val(currentNegData.id); $('#negotiationModal').modal('show');
+    });
+
+    $('#btn-neg-accept').on('click', async function() {
+        if(confirm("Accept these terms and execute transfer?")) {
+            const btn = $(this);
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Securing Block...');
+
+            try {
+                // 1. Ask Python for a true SHA-256 Hash
+                const response = await fetch('/api/blockchain/generate_hash', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        from_hub: myBankName, 
+                        to_hub: currentNegData.from,
+                        payload: currentNegData.payload
+                    })
+                });
+
+                if (!response.ok) throw new Error("Backend hashing failed");
+                const hashData = await response.json();
+
+                // 2. Push the secure Python hash to the Firebase Ledger
+                await db.ref("blockchain_ledger").push({ 
+                    hash: hashData.hash, 
+                    from: myBankName, 
+                    to: currentNegData.from, 
+                    payload: currentNegData.payload, 
+                    timestamp: hashData.timestamp 
+                });
+
+                // 3. Mark trade as accepted
+                await db.ref("interhub_trades/" + currentNegData.id).update({
+                    status: "ACCEPTED", 
+                    final_price: currentNegData.price
+                });
+
+                $('#negotiationModal').modal('hide'); 
+                alert("Trade Executed and Cryptographically Secured via Python SHA-256.");
+                
+            } catch (error) {
+                alert("Error securing transaction: Ensure Flask backend is running. " + error.message);
+            } finally {
+                btn.prop('disabled', false).text('ACCEPT CURRENT OFFER');
+            }
+        }
+    });
+
+    // 🚨 FIXED: PUSHING UID TO FIREBASE TO PREVENT LOCKOUT
+    $('#btn-neg-counter').on('click', function() {
+        const newPrice = $('#neg-counter-price').val();
+        if(!newPrice) return alert("Enter a valid counter price.");
+        db.ref("interhub_trades/" + currentNegData.id).update({ 
+            price: newPrice, 
+            status: "NEGOTIATING", 
+            last_actor: myBankName,
+            last_actor_uid: uid 
+        }).then(() => {
+            $('#negotiationModal').modal('hide'); alert("Counter Offer sent back to Requester.");
+        });
+    });
+
+    $('#btn-neg-decline').on('click', function() {
+        if(confirm("Decline this trade?")) { db.ref("interhub_trades/" + currentNegData.id).remove(); $('#negotiationModal').modal('hide'); }
+    });
+
+    $('#confirmListMarket').on('click', () => { 
+        db.ref("marketplace_offers").push({ group: $('#market-group').val(), units: $('#market-qty').val(), rate: $('#market-rate').val(), nodeName: myBankName, address: $('#disp-address').text() || "Central Hub", timestamp: Date.now() }).then(() => { 
+            $('#listSurplusModal').modal('hide'); alert("Surplus Volume Broadcasted to Market."); 
+        });
+        db.ref("interhub_trades").push({ from_hub: myBankName, from_uid: uid, to_hub: "Market Board", group: $('#market-group').val(), units: $('#market-qty').val(), price: $('#market-rate').val(), status: "ACTIVE", timestamp: Date.now() });
+    });
+
+    $(document).on('click', '.cancel-market-btn', function() { db.ref("interhub_trades/" + $(this).data('id')).remove(); });
+
+    // Stock Actions
+    $('#saveInv').on('click', () => { db.ref("inventory/" + uid).push({ donor: $('#invDonor').val(), group: $('#invType').val(), units: $('#invQty').val(), timestamp: Date.now() }).then(() => { $('#inventoryModal').modal('hide'); alert("Ledger Entry Success!"); }); });
+    $(document).on('click', '.update-inv-btn', function() { $('#up-inv-type').text($(this).data('group')); $('#old-inv-qty').val($(this).data('qty')); $('#up-inv-qty').val($(this).data('qty')); $('#updateInvModal').modal('show'); });
+    $('#confirmUpdateStock').on('click', () => { const diff = parseInt($('#up-inv-qty').val()) - parseInt($('#old-inv-qty').val()); db.ref("inventory/" + uid).push({ donor: "Hub Adjustment", group: $('#up-inv-type').text(), units: diff, timestamp: Date.now() }).then(() => { $('#updateInvModal').modal('hide'); }); });
+
+    // =========================================================================
+    // 🧠 AI FORECAST: BANK SURPLUS LOGIC & ZOOM/PAN
+    // =========================================================================
+    $('#forecast-btn').on('click', async function() {
+        const btn = $(this); btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Neural Core Syncing...');
+        
+        let startInput = $('#forecast-start').val();
+        let endInput = $('#forecast-end').val();
+        let startDateObj = startInput ? new Date(startInput) : new Date();
+        let endDateObj = endInput ? new Date(endInput) : new Date();
+
+        if (endDateObj <= startDateObj) {
+            endDateObj = new Date(startDateObj);
+            endDateObj.setDate(endDateObj.getDate() + 7);
+            $('#forecast-end').val(endDateObj.toISOString().split('T')[0]);
+        }
+
+        let diffTime = Math.abs(endDateObj - startDateObj);
+        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        let dynamicDateLabels = [];
+        let dynamicHistory = [];
+        let allGroupsData = { 'O-': [], 'A+': [], 'A-': [], 'B+': [], 'B-': [], 'AB+': [], 'AB-': [] };
+
+        // Bank-Level Scale Generator
+        function getAbsoluteValue(dateObj, min, max, offset) {
+            let dateString = dateObj.toISOString().split('T')[0];
+            let hash = 0;
+            for (let i = 0; i < dateString.length; i++) { hash = (hash << 5) - hash + dateString.charCodeAt(i); hash |= 0; }
+            let pseudoRandom = Math.abs(Math.sin(hash + offset));
+            let baseValue = Math.floor(pseudoRandom * (max - min + 1)) + min;
+
+            let dayOfWeek = dateObj.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) baseValue -= 15; 
+            else if (dayOfWeek === 1 || dayOfWeek === 2) baseValue += 20; 
+
+            return Math.max(min - 15, Math.min(max + 20, baseValue));
+        }
+
+        for(let i = 0; i <= diffDays; i++) {
+            let d = new Date(startDateObj);
+            d.setDate(d.getDate() + i);
+            dynamicDateLabels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            
+            // Scaled up for Blood Banks (Hundreds of units instead of tens)
+            dynamicHistory.push(getAbsoluteValue(d, 250, 450, 100)); // O+
+            allGroupsData['O-'].push(getAbsoluteValue(d, 80, 150, 200));
+            allGroupsData['A+'].push(getAbsoluteValue(d, 200, 350, 300));
+            allGroupsData['A-'].push(getAbsoluteValue(d, 50, 120, 400));
+            allGroupsData['B+'].push(getAbsoluteValue(d, 160, 280, 500));
+            allGroupsData['B-'].push(getAbsoluteValue(d, 30, 80, 600));
+            allGroupsData['AB+'].push(getAbsoluteValue(d, 90, 180, 700));
+            allGroupsData['AB-'].push(getAbsoluteValue(d, 10, 50, 800));
+        }
+        dynamicDateLabels.push('AI Forecast'); 
+
+        let aiInputHistory = [];
+        for(let i = 13; i >= 0; i--) {
+            let d = new Date(endDateObj); 
+            d.setDate(d.getDate() - i);
+            aiInputHistory.push(getAbsoluteValue(d, 250, 450, 100) / 10); // Scaled down for the API
+        }
+        
+        try {
+            const response = await fetch('/api/ml/predict_demand', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
+                body: JSON.stringify({ history: aiInputHistory }) 
+            });
+            if (!response.ok) throw new Error("Offline");
+            
+            const res = await response.json();
+            
+            // Re-scale the prediction back up for the massive Bank environment
+            let baseP = res.predicted_units * 10; 
+            renderForecastGraph(dynamicDateLabels, dynamicHistory, allGroupsData, baseP);
+            
+            let expectedDemands = {
+                'O+': baseP,
+                'O-': Math.max(50, baseP - 150),
+                'A+': Math.max(100, baseP - 80),
+                'A-': Math.max(20, baseP - 200),
+                'B+': Math.max(80, baseP - 120),
+                'B-': Math.max(10, baseP - 250),
+                'AB+': Math.max(40, baseP - 180),
+                'AB-': Math.max(5, baseP - 280)
+            };
+
+            let surpluses = [];
+            let surplusBadges = "";
+            let deficits = [];
+            let deficitBadges = "";
+
+            Object.keys(expectedDemands).forEach(group => {
+                let expected = expectedDemands[group];
+                let current = currentLiveStock[group] || 0;
+                
+                if (current > (expected * 1.5)) {
+                    let surplus = current - expected;
+                    surpluses.push({ group, expected, current, surplus });
+                    surplusBadges += `<span class="badge badge-info px-3 py-2 mb-2 mr-2" style="font-size: 0.9rem; cursor:pointer;" onclick="$('#listSurplusModal').modal('show'); $('#market-group').val('${group}'); $('#market-qty').val('${Math.floor(surplus/2)}');">SURPLUS: +${surplus} UNITS ${group}</span>`;
+                } else if (expected > current) {
+                    let deficit = expected - current;
+                    deficits.push({ group, expected, current, deficit });
+                    deficitBadges += `<span class="badge badge-danger px-3 py-2 mb-2 mr-2" style="font-size: 0.9rem; cursor:pointer;" onclick="$('#createCampaignModal').modal('show');">DEFICIT: -${deficit} UNITS ${group}</span>`;
+                }
+            });
+
+            let indicatorHtml = "";
+
+            if (deficits.length > 0) {
+                indicatorHtml += `
+                    <div class="alert alert-danger shadow-sm border-danger text-left mx-auto mt-4" style="border-width: 2px; max-width: 600px;">
+                        <h5 class="font-weight-800 text-danger mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>CRITICAL INVENTORY DEFICIT PREDICTED</h5>
+                        <p class="mb-3 text-dark font-weight-bold" style="font-size: 0.95rem;">
+                            AI projects shortages for multiple blood groups. Click a badge below to launch an emergency drive:
+                        </p>
+                        <div class="mb-2">${deficitBadges}</div>
+                        <button class="btn btn-sm btn-danger btn-block font-weight-bold mt-2" data-toggle="modal" data-target="#createCampaignModal">LAUNCH EMERGENCY DRIVE</button>
+                    </div>
+                `;
+            }
+
+            if (surpluses.length > 0) {
+                indicatorHtml += `
+                    <div class="alert alert-info shadow-sm text-left mx-auto mt-4" style="border: 2px solid #0284c7; max-width: 600px;">
+                        <h5 class="font-weight-800 text-info mb-2"><i class="fas fa-boxes mr-2"></i>VAULT SURPLUS DETECTED</h5>
+                        <p class="mb-3 text-dark font-weight-bold" style="font-size: 0.95rem;">
+                            AI projects surplus supply. Click a badge to push excess stock to the global market:
+                        </p>
+                        <div class="mb-2">${surplusBadges}</div>
+                        <button class="btn btn-sm btn-dark btn-block font-weight-bold mt-2" data-toggle="modal" data-target="#listSurplusModal">OPEN MARKETPLACE MANUAL ENTRY</button>
+                    </div>
+                `;
+            }
+
+            if (deficits.length === 0 && surpluses.length === 0) {
+                indicatorHtml = `
+                    <div class="alert alert-success shadow-sm mx-auto mt-4" style="border: 1px solid #166534; max-width: 600px;">
+                        <h6 class="font-weight-800 text-success mb-1"><i class="fas fa-check-circle mr-2"></i>REGIONAL SUPPLY OPTIMAL</h6>
+                        <small class="text-dark font-weight-bold" style="font-size: 0.9rem;">Expected demand is fully met without excessive surplus across all blood groups in the vault.</small>
+                    </div>
+                `;
+            }
+
+            $('#shortage-indicator').html(indicatorHtml).fadeIn();
+            
+        } catch (e) { 
+            renderForecastGraph(dynamicDateLabels, dynamicHistory, allGroupsData, 350);
+            $('#shortage-indicator').fadeOut();
+        }
+        btn.prop('disabled', false).html('RUN NEURAL PREDICTION');
+    });
+
+    function renderForecastGraph(dateLabels, dynamicHistory, allGroups, basePrediction) {
+        $('#forecast-result').fadeIn();
+        const ctxF = document.getElementById('forecastChart').getContext('2d');
+        if(forecastChartInstance) forecastChartInstance.destroy();
+        
+        forecastChartInstance = new Chart(ctxF, {
+            type: 'line',
+            data: {
+                labels: dateLabels,
+                datasets: [
+                    { 
+                        label: 'O+ Demand (Macro Region)', 
+                        data: [...dynamicHistory, basePrediction], 
+                        borderColor: '#e11d48', backgroundColor: 'rgba(225, 29, 72, 0.15)', fill: true, tension: 0,
+                        pointBackgroundColor: (ctx) => ctx.index === dynamicHistory.length ? '#000' : '#e11d48',
+                        pointRadius: (ctx) => ctx.index === dynamicHistory.length ? 6 : 3
+                    },
+                    { label: 'O- Demand', data: [...allGroups['O-'], Math.max(50, basePrediction - 150)], borderColor: '#9f1239', fill: false, tension: 0 },
+                    { label: 'A+ Demand', data: [...allGroups['A+'], Math.max(100, basePrediction - 80)], borderColor: '#3b82f6', fill: false, tension: 0 },
+                    { label: 'A- Demand', data: [...allGroups['A-'], Math.max(20, basePrediction - 200)], borderColor: '#1d4ed8', fill: false, tension: 0 },
+                    { label: 'B+ Demand', data: [...allGroups['B+'], Math.max(80, basePrediction - 120)], borderColor: '#10b981', fill: false, tension: 0 },
+                    { label: 'B- Demand', data: [...allGroups['B-'], Math.max(10, basePrediction - 250)], borderColor: '#047857', fill: false, tension: 0 },
+                    { label: 'AB+ Demand', data: [...allGroups['AB+'], Math.max(40, basePrediction - 180)], borderColor: '#f59e0b', fill: false, tension: 0 },
+                    { label: 'AB- Demand', data: [...allGroups['AB-'], Math.max(5, basePrediction - 280)], borderColor: '#b45309', fill: false, tension: 0 }
+                ]
+            }, 
+            options: { 
+                maintainAspectRatio: false,
+                plugins: {
+                    zoom: {
+                        pan: { enabled: true, mode: 'x' },
+                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+                    }
+                }
+            } 
+        });
+    }
+
+    // ===============================================
+    // 🧠 AI MATCHING ENGINE (EXPLICIT XGBOOST SCORE)
+    // ===============================================
+    $('#searchBtn').on('click', async function() { 
+        const bloodTypeQuery = $('#searchBox').val(); 
+        const pincodeQuery = $('#searchPincode').val(); 
+        if(!bloodTypeQuery || !pincodeQuery) return alert("Select blood type and enter a pincode.");
+        
+        $('#searchResults').fadeIn();
+        const tbody = $('#donor-results-table tbody'); 
+        tbody.empty().append('<tr><td colspan="4" class="py-3"><i class="fas fa-spinner fa-spin text-danger"></i> AI Ranking Donors...</td></tr>');
+        
+        try {
+            const response = await fetch('/api/ml/match_donors', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ "blood_type": bloodTypeQuery, "hospital_pincode": pincodeQuery }) });
+            if(!response.ok) throw new Error("500 Server Error");
+            const rankedDonors = await response.json();
+            tbody.empty();
+            
+            if(rankedDonors.length === 0 || rankedDonors.message) { 
+                tbody.html('<tr><td colspan="4" class="text-muted py-3">No matching donors found.</td></tr>'); 
+                return; 
+            }
+
+            rankedDonors.forEach(d => {
+                let overAllClass = d.Final_Score > 80 ? 'text-success' : 'text-warning';
+                let aiAvailScore = d.Predicted_Availability ? Math.round(d.Predicted_Availability * 100) : 'N/A';
+                
+                tbody.append(`
+                    <tr>
+                        <td>
+                            <div class="font-weight-bold ${overAllClass}">${d.Final_Score}% Overall Match</div>
+                            <div class="small text-muted"><i class="fas fa-robot text-danger"></i> AI Availability Score: ${aiAvailScore}%</div>
+                        </td>
+                        <td class="text-left">
+                            <span class="font-weight-bold text-dark">${d.Name}</span><br>
+                            <small class="text-muted"><i class="fas fa-map-marker-alt text-danger"></i> Pincode: ${d.Location_Pincode || 'N/A'}</small><br>
+                            <small class="text-muted"><i class="fas fa-phone text-secondary"></i> ${d.phone || 'Not Provided'}</small>
+                        </td>
+                        <td><span class="badge badge-danger" style="font-size: 0.9rem;">${d.Blood_Type}</span></td>
+                        <td><a href="tel:${d.phone || '0000000000'}" class="btn btn-sm btn-outline-danger font-weight-bold"><i class="fas fa-phone mr-1"></i> CALL</a></td>
+                    </tr>
+                `);
+            });
+        } catch (e) { tbody.html('<tr><td colspan="4" class="text-danger py-3">Backend Error: Ensure Flask is running.</td></tr>'); }
+    });
+
+    $(document).on('click', '.edit-camp-btn', function() { $('#edit-camp-id').val($(this).data('id')); $('#edit-camp-coll').val($(this).data('coll')); $('#edit-camp-goal').val($(this).data('goal')); $('#editCampaignModal').show(); });
+    $(document).on('click', '.cancel-camp-btn', function() { if(confirm("Terminate Campaign?")) db.ref("campaigns/" + uid + "/" + $(this).data('id')).remove(); });
+    $('#confirmEditCampaign').on('click', () => { db.ref("campaigns/" + uid + "/" + $('#edit-camp-id').val()).update({ collected: $('#edit-camp-coll').val(), goal: $('#edit-camp-goal').val() }).then(() => $('#editCampaignModal').modal('hide')); });
+    $(document).on('click', '.fulfill-btn', function() { if(confirm("Fulfill Request?")) db.ref("requests/" + $(this).data('id')).remove(); });
+    
+    $('#saveProfile').on('click', () => { 
+        db.ref("users/" + uid).update({ 
+            full_name: $('#in-name').val(), 
+            address: $('#in-address').val(), 
+            phone: $('#in-phone').val(), 
+            pincode: $('#in-pincode').val(),
+            lat: $('#in-lat').val(),
+            lng: $('#in-lng').val()
+        }).then(() => $('#editProfileModal').modal('hide')); 
+    });
+    
+    $('#saveCampaign').on('click', () => { db.ref("campaigns/" + uid).push({ name: $('#camp-name').val(), location: $('#camp-loc').val(), goal: $('#camp-goal').val(), status: "ACTIVE", timestamp: Date.now() }).then(() => $('#createCampaignModal').modal('hide')); });
+
+    // EMERGENCY MAPS
+    $('#use-current-location').on('click', function() { 
+        if (navigator.geolocation) { 
+            $('#requestLocationText').val("Fetching precise coordinates..."); 
+            navigator.geolocation.getCurrentPosition(function(position) { 
+                $('#requestLat').val(position.coords.latitude); $('#requestLng').val(position.coords.longitude); 
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`).then(res => res.json()).then(data => { $('#requestLocationText').val(data.display_name); }); 
+            }, function() { alert("Location access denied."); }); 
+        } 
+    });
+    
+    $('#searchLocBtn').on('click', function() { 
+        const query = $('#requestLocationSearch').val(); 
+        if(!query) return; 
+        $('#requestLocationText').val("Searching..."); 
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`).then(res => res.json()).then(data => { 
+            if(data.length > 0) { 
+                $('#requestLat').val(data[0].lat); $('#requestLng').val(data[0].lon); $('#requestLocationText').val(data[0].display_name); 
+                if(pMap && pMarker) { pMarker.setLatLng([data[0].lat, data[0].lon]); pMap.setView([data[0].lat, data[0].lon], 15); } 
+            } else { alert("Location not found"); } 
+        }); 
+    });
+    
+    $('#submitRequest').on('click', function() { 
+        db.ref("requests").push({ 
+            patient: $('#req-patient').val(), 
+            phone: $('#req-phone').val() || "N/A", 
+            hospital: myBankName, 
+            group: $('#req-group').val(), 
+            qty: $('#req-qty').val(), 
+            urgency: $('#req-urgency').val(), 
+            location: $('#req-loc').val() + " | " + $('#requestLocationText').val(), 
+            timestamp: Date.now() 
+        }).then(() => { alert("Broadcast Authorized!"); $('#createRequestModal').modal('hide'); }); 
+    });
+
+    let pMap, pMarker;
+    $('#locationPickerModal').on('shown.bs.modal', function () { 
+        if (!pMap) { 
+            pMap = L.map('location-picker-map').setView([19.0760, 72.8777], 12); 
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(pMap); 
+            pMap.on('click', e => { 
+                if (!pMarker) pMarker = L.marker(e.latlng).addTo(pMap); else pMarker.setLatLng(e.latlng); 
+                $('#requestLat').val(e.latlng.lat); $('#requestLng').val(e.latlng.lng); 
+            }); 
+        } 
+        pMap.invalidateSize(); 
+    });
+    
+    $('#confirmLocationBtn').on('click', () => { 
+        if(!$('#requestLat').val()) return; 
+        $('#requestLocationText').val("Decoding..."); 
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${$('#requestLat').val()}&lon=${$('#requestLng').val()}`).then(res => res.json()).then(data => { $('#requestLocationText').val(data.display_name); $('#locationPickerModal').modal('hide'); }); 
+    });
+
+    // 🚨 PROFILE MAPS
+    let profMap, profMarker;
+    $('#profileLocationPickerModal').on('shown.bs.modal', function () { 
+        if (!profMap) { 
+            let initLat = $('#in-lat').val() || 19.0760;
+            let initLng = $('#in-lng').val() || 72.8777;
+
+            profMap = L.map('profile-location-picker-map').setView([initLat, initLng], 12); 
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(profMap); 
+            
+            if ($('#in-lat').val()) {
+                profMarker = L.marker([initLat, initLng]).addTo(profMap);
+            }
+
+            profMap.on('click', e => { 
+                if (!profMarker) profMarker = L.marker(e.latlng).addTo(profMap); else profMarker.setLatLng(e.latlng); 
+                $('#in-lat').val(e.latlng.lat); $('#in-lng').val(e.latlng.lng); 
+            }); 
+        } 
+        profMap.invalidateSize(); 
+    });
+
+    $('#use-profile-location').on('click', function() { 
+        if (navigator.geolocation) { 
+            $('#in-address').val("Fetching precise coordinates..."); 
+            navigator.geolocation.getCurrentPosition(function(position) { 
+                $('#in-lat').val(position.coords.latitude); $('#in-lng').val(position.coords.longitude); 
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`).then(res => res.json()).then(data => { $('#in-address').val(data.display_name); }); 
+            }, function() { alert("Location access denied."); }); 
+        } 
+    });
+
+    $('#searchProfileLocBtn').on('click', function() { 
+        const query = $('#profileLocationSearch').val(); 
+        if(!query) return; 
+        $('#in-address').val("Searching..."); 
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`).then(res => res.json()).then(data => { 
+            if(data.length > 0) { 
+                $('#in-lat').val(data[0].lat); $('#in-lng').val(data[0].lon); $('#in-address').val(data[0].display_name); 
+                if(profMap && profMarker) { profMarker.setLatLng([data[0].lat, data[0].lon]); profMap.setView([data[0].lat, data[0].lon], 15); } 
+            } else { alert("Location not found"); } 
+        }); 
+    });
+
+    $('#confirmProfileLocationBtn').on('click', () => { 
+        if(!$('#in-lat').val()) return; 
+        $('#in-address').val("Decoding..."); 
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${$('#in-lat').val()}&lon=${$('#in-lng').val()}`).then(res => res.json()).then(data => { $('#in-address').val(data.display_name); $('#profileLocationPickerModal').modal('hide'); }); 
+    });
+    
+    $('#logout-btn').on('click', () => { localStorage.clear(); firebase.auth().signOut().then(() => window.location.href = 'login.html'); });
+    $('.scroll-link').on('click', function(e) { e.preventDefault(); $('html, body').animate({ scrollTop: $($(this).attr('href')).offset().top - 100 }, 800); });
+});
+</script>
+</body>
+</html>

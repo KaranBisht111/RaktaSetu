@@ -1,0 +1,74 @@
+/* ===================================================================
+   DASHBOARD STYLESHEET for RaktaSetu CBBMS
+   - Loaded AFTER main.css
+   =================================================================== */
+
+/* ===== 1. KPI STAT CARDS ===== */
+.stat-card {
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    border: none;
+    animation: fadeIn-down 0.5s ease-out;
+}
+.stat-card .card-body {
+    background: linear-gradient(135deg, #c1121f, #780000);
+}
+.stat-card h2 { font-weight: 700; }
+.stat-card p { font-weight: 500; opacity: 0.9; }
+.stat-card .stat-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 4em;
+    color: rgba(255, 255, 255, 0.15);
+    transition: transform 0.3s ease;
+}
+.stat-card:hover .stat-icon {
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Animation */
+@keyframes fadeIn-down {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== 2. TABLES ===== */
+.table { font-size: 0.9rem; }
+.table th, .table td { vertical-align: middle; }
+.table thead { background-color: #8b0000; color: #fff; }
+.table-hover tbody tr:hover { background-color: #ffeaea; }
+
+/* ===== 3. CHARTS ===== */
+canvas { padding: 15px; }
+
+/* ===== 4. MAP CONTAINERS ===== */
+#donor-map, #hospital-map, #location-picker-map {
+    width: 100%;
+    height: 450px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ===== 5. SIDEBAR & NAVIGATION ===== */
+.list-group-item {
+    background-color: #fff;
+    border-top: 1px solid #f0f0f0 !important;
+    transition: background-color 0.3s ease;
+}
+.list-group-item:first-child { border-top: none !important; }
+.list-group-flush .list-group-item { border-radius: 0; }
+.list-group-item-action:hover { background-color: #ffeaea; }
+
+/* ===== 6. RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 992px) {
+    .stat-card { text-align: center; }
+    .stat-card .stat-icon { display: none; }
+}
+
+@media (max-width: 768px) {
+    canvas { height: 300px !important; }
+    #donor-map, #hospital-map, #location-picker-map { height: 300px; }
+}

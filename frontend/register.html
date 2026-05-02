@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | RaktaSetu – ICBMS</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --vibrant-red: #e11d48;
+            --deep-red: #9f1239;
+            --soft-red: #fff1f2;
+            --text-dark: #0f172a;
+            --text-slate: #475569;
+            --border-color: #e2e8f0;
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: #ffffff;
+            color: var(--text-dark); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            margin: 0; 
+        }
+
+        .navbar { 
+            background-color: #ffffff; 
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05); 
+            border-bottom: 4px solid var(--vibrant-red);
+            padding: 1rem 2rem;
+        }
+        .navbar-brand { color: var(--vibrant-red) !important; font-weight: 800; font-size: 1.6rem; }
+
+        .register-container { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            flex: 1; 
+            padding: 50px 15px; 
+            background: linear-gradient(180deg, var(--soft-red) 0%, #ffffff 100%); 
+        }
+
+        .card { 
+            border-radius: 24px; 
+            background-color: #ffffff;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08); 
+            border: 2px solid var(--soft-red); 
+            animation: fadeIn 0.6s ease-out; 
+            width: 100%;
+            max-width: 550px;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card-header { 
+            background-color: var(--vibrant-red); 
+            color: #fff; 
+            font-weight: 700; 
+            text-align: center; 
+            font-size: 1.1rem; 
+            padding: 18px;
+            text-transform: uppercase;
+        }
+        
+        .form-control { border-radius: 12px; background-color: var(--soft-red); border: 1px solid var(--border-color); }
+        .btn-danger { border-radius: 12px; background-color: var(--vibrant-red); border: none; font-weight: 700; padding: 14px; }
+        .ai-status-text { font-size: 0.75rem; color: var(--text-slate); font-weight: 600; font-style: italic; }
+        footer { background-color: var(--text-dark); color: #94a3b8; text-align: center; padding: 25px 0; }
+        a { color: var(--vibrant-red); font-weight: 600; }
+        .password-warning { font-size: 0.7rem; font-weight: 700; color: #b91c1c; margin-top: 5px; display: none; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">RAKTASETU</a>
+    </div>
+</nav>
+
+<div class="register-container">
+    <div class="card-wrapper">
+        <div class="card">
+            <div class="card-header">Initialize Node Registration</div>
+            <div class="card-body p-4">
+                <form id="registerForm">
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold small">Register As</label>
+                        <select class="form-control" id="role" required>
+                            <option value="">Choose category...</option>
+                            <option value="donor">Individual Donor</option>
+                            <option value="hospital">Hospital Authority</option>
+                            <option value="bank">Blood Bank Hub</option>
+                            <option value="admin">Admin Terminal (Auth Required)</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-3">
+                            <label id="nameLabel" class="font-weight-bold small">Full Name</label>
+                            <input type="text" class="form-control" id="name" placeholder="John Doe" required>
+                        </div>
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold small">Email ID</label>
+                            <input type="email" class="form-control" id="email" placeholder="user@gmail.com" required>
+                        </div>
+                    </div>
+
+                    <div id="donorFields" style="display: none;">
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold small">Blood Group</label>
+                            <select class="form-control" id="bloodType">
+                                <option value="">Select Group...</option>
+                                <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                                <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+                            </select>
+                            <p class="ai-status-text mt-2"><i class="fas fa-robot text-danger mr-1"></i> Syncing with AI Matching Engine.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold small">Location (City)</label>
+                            <input type="text" class="form-control" id="location" placeholder="e.g. Mumbai" required>
+                        </div>
+                        <div class="col-md-6 form-group mb-3" id="pincodeField" style="display: none;">
+                            <label class="font-weight-bold small">Area Pincode</label>
+                            <input type="text" class="form-control" id="pincode" placeholder="e.g. 400022">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold small">Password</label>
+                            <input type="password" class="form-control" id="password" required>
+                            <p id="pwd-req" class="password-warning"><i class="fas fa-exclamation-circle"></i> Min 8 chars, 1 number, 1 special char.</p>
+                        </div>
+                        <div class="col-md-6 form-group mb-4">
+                            <label class="font-weight-bold small">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                    </div>
+
+                    <div id="message-container"></div>
+                    <button type="submit" class="btn btn-danger btn-block btn-lg" id="register-btn">REGISTER ON CLOUD</button>
+                </form>
+                <p class="text-center mt-4 mb-0 small text-muted">Already registered? <a href="login.html">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>&copy; 2026 RaktaSetu – Cloud ICBMS Node.</footer>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="/firebase-config.js"></script>
+
+<script>
+$(document).ready(function() {
+    const roleSelect = $('#role');
+    const donorFields = $('#donorFields');
+    const pincodeField = $('#pincodeField');
+    const nameLabel = $('#nameLabel');
+    const nameInput = $('#name');
+    const pincodeInput = $('#pincode');
+
+    roleSelect.on('change', function() {
+        const role = $(this).val();
+        
+        // Show Blood Type only for Donors
+        donorFields.toggle(role === 'donor');
+        
+        // Show Pincode for everyone EXCEPT Admin
+        if (role === 'admin' || role === '') {
+            pincodeField.hide();
+            pincodeInput.removeAttr('required');
+        } else {
+            pincodeField.show();
+            pincodeInput.attr('required', true);
+        }
+
+        // Adjust Name Label
+        if (role === 'hospital') nameLabel.text('Hospital Name');
+        else if (role === 'bank') nameLabel.text('Blood Bank Name');
+        else if (role === 'admin') nameLabel.text('Admin Name');
+        else nameLabel.text('Full Name');
+    });
+
+    $('#registerForm').on('submit', async function(e) {
+        e.preventDefault();
+        
+        const emailValue = $('#email').val().trim();
+        const pwd = $('#password').val();
+        const confirmPwd = $('#confirmPassword').val();
+        const selectedRole = roleSelect.val();
+
+        // 1. ADMIN DOMAIN SECURITY CHECK
+        if (selectedRole === 'admin' && !emailValue.endsWith('@raktasetu2026.com')) {
+            return showMessage('Access Denied: Use official @gmail.com email.', 'danger');
+        }
+
+        // 2. PASSWORD STRENGTH CHECK
+        const strongPwdRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;
+        if (!strongPwdRegex.test(pwd)) {
+            $('#pwd-req').fadeIn();
+            return showMessage('Security Error: Password too weak.', 'danger');
+        } else {
+            $('#pwd-req').fadeOut();
+        }
+
+        if (pwd !== confirmPwd) {
+            return showMessage('Passwords do not match.', 'danger');
+        }
+
+        const registerBtn = $('#register-btn');
+        registerBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Syncing...');
+
+        const requestBody = {
+            role: selectedRole,
+            name: nameInput.val().trim(),
+            email: emailValue,
+            password: pwd,
+            location: $('#location').val().trim(),
+            pincode: pincodeInput.val().trim() || 'N/A', // Captures the pincode
+            bloodType: $('#bloodType').val() || 'N/A'
+        };
+
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showMessage('Account Initialized! Redirecting...', 'success');
+                setTimeout(() => window.location.href = 'login.html', 1500);
+            } else {
+                showMessage(data.message || 'Registration failed.', 'danger');
+                registerBtn.prop('disabled', false).text('REGISTER ON CLOUD');
+            }
+        } catch (err) {
+            showMessage('Backend Offline. Is app.py running?', 'danger');
+            registerBtn.prop('disabled', false).text('REGISTER ON CLOUD');
+        }
+    });
+
+    function showMessage(msg, type) {
+        $('#message-container').html(`<div class="alert alert-${type} py-2 small">${msg}</div>`);
+    }
+});
+</script>
+</body>
+</html>

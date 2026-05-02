@@ -1,0 +1,91 @@
+/* ===================================================================
+   MAIN STYLESHEET for RaktaSetu CBBMS
+   =================================================================== */
+
+/* 1. GLOBAL & TYPOGRAPHY */
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f7f9;
+    color: #333;
+    margin: 0; padding: 0;
+}
+
+a {
+    color: #b20000; text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover { color: #ff1e1e; text-decoration: none; }
+
+/* 2. CUSTOM SCROLLBAR */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #b20000; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #8b0000; }
+
+/* 3. NAVBAR */
+.navbar {
+    background: linear-gradient(90deg, #b20000, #8b0000);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.navbar .navbar-brand { font-weight: 700; font-size: 1.2rem; color: #fff !important; }
+.navbar .nav-link { color: #fff !important; font-weight: 500; transition: color 0.3s ease; }
+.navbar .nav-link:hover { color: #ffdede !important; }
+
+/* 4. CARDS */
+.card {
+    border-radius: 15px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    background: #fff; border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+.card-header {
+    font-weight: 600; font-size: 1.1rem;
+    background: linear-gradient(90deg, #b20000, #8b0000);
+    color: #fff !important; border-radius: 15px 15px 0 0 !important;
+}
+
+/* 5. BUTTONS */
+.btn {
+    border-radius: 50px; font-size: 0.9rem; font-weight: 600;
+    padding: 0.5rem 1.25rem; transition: all 0.3s ease-in-out;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+.btn-primary { background-color: #b20000; border-color: #b20000; color: #fff; }
+.btn-primary:hover { background-color: #8b0000; border-color: #8b0000; }
+.btn-success { background-color: #218838; border-color: #218838; color: #fff; }
+.btn-success:hover { background-color: #19692c; border-color: #19692c; }
+.btn-danger { background-color: #8b0000; border-color: #8b0000; color: #fff; }
+.btn-danger:hover { background-color: #b20000; border-color: #b20000; }
+.btn-back {
+    background: linear-gradient(90deg, #8b0000, #b20000); color: #fff;
+}
+.btn-back:hover { background: linear-gradient(90deg, #b20000, #8b0000); color: #fff; }
+
+/* 6. FORMS */
+.form-control {
+    border-radius: 10px; border: 1px solid #ced4da;
+    padding: 0.75rem 1rem; transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.form-control:focus { outline: none; border-color: #dc3545; box-shadow: 0 0 8px rgba(220,53,69,0.25); }
+
+/* 7. FOOTER */
+.footer { color: #fff; background: linear-gradient(90deg, #b20000, #8b0000); padding: 20px 0; text-align: center; }
+
+/* 8. BACK TO TOP BUTTON */
+#backToTop {
+    display: none; position: fixed; bottom: 25px; right: 25px; z-index: 1050;
+    background: linear-gradient(90deg, #b20000, #8b0000);
+    color: #fff; border: none; padding: 10px 15px;
+    border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+#backToTop:hover { background: linear-gradient(90deg, #8b0000, #b20000); }
+
+/* 9. RESPONSIVE */
+@media (max-width: 768px) {
+    .navbar-brand { font-size: 1rem; }
+    .card { margin-left: 10px; margin-right: 10px; }
+}

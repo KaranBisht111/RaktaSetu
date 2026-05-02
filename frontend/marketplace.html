@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Marketplace | RaktaSetu – ICBMS</title>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        const uid = localStorage.getItem('user_id');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --vibrant-red: #e11d48;
+            --deep-red: #9f1239;
+            --soft-red: #fff1f2;
+            --text-dark: #0f172a;
+            --text-slate: #475569;
+            --border-color: #e2e8f0;
+        }
+
+        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; color: var(--text-dark); scroll-behavior: smooth; }
+        .navbar { background: white; border-bottom: 4px solid var(--vibrant-red); padding: 0.8rem 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .navbar-brand { color: var(--vibrant-red) !important; font-weight: 800; font-size: 1.5rem; letter-spacing: 1px; }
+        
+        .stat-card { border-radius: 20px; border: none; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: 0.3s; position: relative; overflow: hidden; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(225, 29, 72, 0.1); }
+        .stat-label { font-size: 0.7rem; font-weight: 800; color: var(--text-slate); text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--vibrant-red); }
+        .stat-icon { position: absolute; right: 20px; bottom: 10px; font-size: 2.5rem; color: var(--vibrant-red); opacity: 0.05; }
+        
+        .card { border-radius: 20px; border: 1px solid var(--border-color); margin-bottom: 25px; background: #fff; overflow: hidden; }
+        .card-header { background: var(--soft-red); color: var(--vibrant-red); font-weight: 800; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; padding: 18px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        
+        /* 📜 DATA SCROLL CONTAINERS */
+        .scroll-container { max-height: 350px; overflow-y: auto; scrollbar-width: thin; }
+        .scroll-container::-webkit-scrollbar { width: 6px; }
+        .scroll-container::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+
+        .table thead th { background-color: #fcfcfc; border-bottom: 2px solid var(--soft-red); color: var(--vibrant-red); text-transform: uppercase; font-size: 0.7rem; border-top: none; padding: 15px; position: sticky; top: 0; z-index: 10; }
+        .table td { vertical-align: middle; font-size: 0.85rem; font-weight: 600; color: var(--text-slate); padding: 15px; }
+        .table-hover tbody tr:hover { background-color: var(--soft-red); }
+        
+        .btn-danger { background-color: var(--vibrant-red); border: none; border-radius: 12px; font-weight: 800; padding: 8px 16px; transition: 0.3s; }
+        .btn-danger:hover { background-color: var(--deep-red); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(225, 29, 72, 0.2); }
+        .btn-success { border-radius: 12px; font-weight: 800; padding: 8px 16px; transition: 0.3s; }
+        .btn-dark { border-radius: 12px; font-weight: 800; padding: 8px 16px; transition: 0.3s; }
+        .form-control { border-radius: 10px; background: var(--soft-red); border: 1px solid var(--border-color); font-weight: 600; font-size: 0.85rem; }
+        
+        .ledger-row { font-family: 'Courier New', Courier, monospace; font-size: 0.75rem; color: var(--text-dark); }
+        .hash-tag { color: var(--vibrant-red); font-weight: 700; background: var(--soft-red); padding: 3px 8px; border-radius: 4px; }
+        
+        footer { background: var(--text-dark); color: white; padding: 30px; margin-top: 50px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">RAKTASETU MARKET</a>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav align-items-center">
+                <li class="nav-item"><a class="nav-link font-weight-bold text-dark px-3" href="#" onclick="returnToHub()"><i class="fas fa-th-large"></i> Return to Hub</a></li>
+                <li class="nav-item ml-lg-3"><a class="nav-link btn btn-outline-danger px-4 py-1 font-weight-800" style="border-radius: 8px;" href="#" id="logout-btn">LOGOUT</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid mt-4 px-lg-5">
+    <div class="row mb-4">
+        <div class="col-md-3"><div class="card stat-card p-4"><div class="stat-label">Total Network Trades</div><div class="stat-value" id="total-exchanges">0</div><div class="stat-icon"><i class="fas fa-handshake"></i></div></div></div>
+        <div class="col-md-3"><div class="card stat-card p-4"><div class="stat-label">Surplus Units Listed</div><div class="stat-value text-success" id="market-surplus-units">0</div><div class="stat-icon"><i class="fas fa-box-open"></i></div></div></div>
+        <div class="col-md-3"><div class="card stat-card p-4"><div class="stat-label">Shortage Units Needed</div><div class="stat-value text-danger" id="market-shortage-units">0</div><div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div></div></div>
+        <div class="col-md-3"><div class="card stat-card p-4"><div class="stat-label">Verified Blocks</div><div class="stat-value" id="ledger-count">0</div><div class="stat-icon"><i class="fas fa-link"></i></div></div></div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow-sm" style="border-top: 4px solid #10b981;">
+                <div class="card-header bg-white text-success"><span><i class="fas fa-boxes mr-2"></i>Global Surplus Offers</span></div>
+                <div class="card-body p-0 scroll-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 text-center" id="offers-table">
+                            <thead><tr><th>Source Hub</th><th>Resource</th><th>Volume</th><th>Listed Rate</th><th>Action</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm" style="border-top: 4px solid var(--vibrant-red);">
+                <div class="card-header bg-white text-danger"><span><i class="fas fa-exclamation-triangle mr-2"></i>Global Shortage Requests</span></div>
+                <div class="card-body p-0 scroll-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 text-center" id="requests-table">
+                            <thead><tr><th>Requesting Hub</th><th>Resource Needed</th><th>Volume</th><th>Offer Price</th><th>Action</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12">
+            <div class="card shadow-sm" id="blockchain-ledger">
+                <div class="card-header"><span><i class="fas fa-link mr-2"></i>Immutable Cryptographic Ledger Explorer</span></div>
+                <div class="card-body p-0 scroll-container" style="max-height: 400px;">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0 text-center">
+                            <thead class="bg-light"><tr class="small text-muted"><th>SHA-256 Block Hash</th><th>Timestamp</th><th>Sender Hub</th><th>Receiver Hub</th><th>Payload</th><th>Verification</th></tr></thead>
+                            <tbody class="ledger-row" id="ledger-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="requestSurplusModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow-lg"><div class="modal-header border-0 pb-0"><h5 class="modal-title font-weight-800 text-danger">Respond to Surplus Offer</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div><div class="modal-body p-4 text-center">
+    <p class="mb-3">Requesting <b id="rs-units" class="text-danger"></b> from <b id="rs-target-hub"></b>.</p>
+    <div class="alert alert-light py-2 mb-3 border">Their Listed Rate: <b id="rs-listed-price" class="text-success"></b></div>
+    <div class="form-group text-left">
+        <label class="small font-weight-bold">My Counter Offer Price (CR)</label>
+        <input type="number" id="rs-offer-price" class="form-control" placeholder="Enter your opening bid">
+    </div>
+    <input type="hidden" id="rs-offer-id"><input type="hidden" id="rs-payload"><input type="hidden" id="rs-original-price">
+    <input type="hidden" id="rs-target-address"><input type="hidden" id="rs-target-phone">
+    
+    <div class="row mt-4">
+        <div class="col-6 pr-1">
+            <button class="btn btn-outline-danger btn-block font-weight-800" id="btn-confirm-request" style="font-size:0.8rem;">SEND COUNTER OFFER</button>
+        </div>
+        <div class="col-6 pl-1">
+            <button class="btn btn-dark btn-block font-weight-800" id="btn-instant-accept-surplus" style="font-size:0.8rem;">ACCEPT INSTANTLY</button>
+        </div>
+    </div>
+    <p class="xsmall text-muted mt-3 mb-0">"Accept Instantly" executes the trade at their listed rate immediately.</p>
+</div></div></div></div>
+
+<div class="modal fade" id="supplyShortageModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow-lg"><div class="modal-header border-0 pb-0"><h5 class="modal-title font-weight-800 text-success">Respond to Shortage Request</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div><div class="modal-body p-4 text-center">
+    <p class="mb-3">Supplying <b id="ss-units" class="text-success"></b> to <b id="ss-target-hub"></b>.</p>
+    <div class="alert alert-light py-2 mb-3 border">Their Willing Price: <b id="ss-listed-price" class="text-danger"></b></div>
+    <div class="form-group text-left">
+        <label class="small font-weight-bold">My Requested Counter Price (CR)</label>
+        <input type="number" id="ss-offer-price" class="form-control" placeholder="Enter what you want to charge">
+    </div>
+    <input type="hidden" id="ss-request-id"><input type="hidden" id="ss-payload"><input type="hidden" id="ss-original-price">
+    <input type="hidden" id="ss-target-address"><input type="hidden" id="ss-target-phone">
+    
+    <div class="row mt-4">
+        <div class="col-6 pr-1">
+            <button class="btn btn-outline-success btn-block font-weight-800" id="btn-confirm-supply" style="font-size:0.8rem;">SEND COUNTER OFFER</button>
+        </div>
+        <div class="col-6 pl-1">
+            <button class="btn btn-dark btn-block font-weight-800" id="btn-instant-accept-shortage" style="font-size:0.8rem;">ACCEPT INSTANTLY</button>
+        </div>
+    </div>
+    <p class="xsmall text-muted mt-3 mb-0">"Accept Instantly" executes the trade at their willing price immediately.</p>
+</div></div></div></div>
+
+<footer><div class="container text-center"><p class="mb-0 small font-weight-bold text-white-50">RAKTASETU ICBMS v2.6 | SECURED DISTRIBUTED LEDGER NODE</p></div></footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="/firebase-config.js"></script>
+
+<script>
+// Return Navigation Script
+function returnToHub() {
+    const role = localStorage.getItem('role');
+    if (role === 'admin') window.location.href = 'admin.html';
+    else if (role === 'bank') window.location.href = 'bank.html';
+    else if (role === 'hospital') window.location.href = 'hospital.html';
+    else window.location.href = 'login.html';
+}
+
+$(document).ready(function() {
+    const db = firebase.database();
+    let myHubName = "Unknown Node";
+    let myHubPhone = "Not Set";
+    let myHubAddress = "Not Set";
+
+    // --- 1. IDENTITY SYNC ---
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            db.ref("users/" + user.uid).once("value", snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    myHubName = data.name || data.full_name || "Unknown Hub";
+                    myHubPhone = data.phone || "Not Set";
+                    myHubAddress = data.address || "Not Set";
+                }
+            });
+        }
+    });
+
+    // 🚨 Ghost Sweeper (FIXED AUTO CLEANUP FOR SHORTAGES & OFFERS) 🚨
+    db.ref("interhub_trades").on("value", tradesSnap => {
+        let activeMarketSignatures = []; 
+        let acceptedMarketKeys = [];
+
+        tradesSnap.forEach(trade => {
+            const t = trade.val();
+            
+            // 1. Identify explicitly accepted requests/offers
+            if (t.status === "ACCEPTED") {
+                if (t.offer_id) acceptedMarketKeys.push(t.offer_id);
+                if (t.request_id) acceptedMarketKeys.push(t.request_id);
+            } 
+            
+            // 2. Track active outgoing market listings
+            if (t.to_hub === "Market Node" || t.to_hub === "Market Board") {
+                let payloadStr = t.payload;
+                // Gracefully reconstruct payload string if missing from surplus creation
+                if (!payloadStr && t.units && t.group) {
+                    payloadStr = `${t.units} Units [${t.group}]`;
+                }
+                activeMarketSignatures.push(`${t.from_hub}_${payloadStr}`);
+            }
+        });
+
+        // Sweep Surplus Offers
+        db.ref("marketplace_offers").once("value", offersSnap => {
+            offersSnap.forEach(offer => {
+                const o = offer.val();
+                const offerSignature = `${o.nodeName}_${o.units} Units [${o.group}]`;
+                
+                if (acceptedMarketKeys.includes(offer.key)) {
+                    db.ref("marketplace_offers/" + offer.key).remove();
+                } else if (!activeMarketSignatures.includes(offerSignature)) {
+                    db.ref("marketplace_offers/" + offer.key).remove();
+                }
+            });
+        });
+
+        // Sweep Shortage Requests
+        db.ref("marketplace_requests").once("value", requestsSnap => {
+            requestsSnap.forEach(req => {
+                const r = req.val();
+                const requestSignature = `${r.nodeName}_${r.units} Units [${r.group}]`;
+                
+                if (acceptedMarketKeys.includes(req.key)) {
+                    db.ref("marketplace_requests/" + req.key).remove();
+                } else if (!activeMarketSignatures.includes(requestSignature)) {
+                    db.ref("marketplace_requests/" + req.key).remove();
+                }
+            });
+        });
+    });
+
+
+    // --- 2. LIVE DASHBOARD DATA ---
+
+    // A. Surplus Offers
+    db.ref("marketplace_offers").on("value", snapshot => {
+        let tbody = $('#offers-table tbody');
+        tbody.empty();
+        let totalSurplus = 0; let count = 0;
+
+        snapshot.forEach(child => {
+            const d = child.val();
+            totalSurplus += parseInt(d.units || 0); count++;
+            let actionButton = `<button class="btn btn-sm btn-danger req-surplus-btn" data-id="${child.key}" data-hub="${d.nodeName}" data-group="${d.group}" data-units="${d.units}" data-rate="${d.rate}" data-address="${d.address || 'N/A'}" data-phone="${d.phone || 'N/A'}">VIEW OFFER</button>`;
+            if(d.nodeName === myHubName) actionButton = `<span class="badge badge-light border">YOUR LISTING</span>`;
+            tbody.append(`<tr><td><b>${d.nodeName || 'Network Hub'}</b><br><small class="text-muted">${d.address || 'Mumbai'}</small></td><td><span class="badge badge-light border px-2">${d.group || 'N/A'}</span></td><td class="font-weight-800 text-success">${d.units || 0} U</td><td class="font-weight-bold text-success">${d.rate || 0} CR</td><td>${actionButton}</td></tr>`);
+        });
+        if(count === 0) tbody.html('<tr><td colspan="5" class="text-muted py-4">No surplus units currently listed.</td></tr>');
+        $('#market-surplus-units').text(totalSurplus);
+    });
+
+    // B. Shortage Requests
+    db.ref("marketplace_requests").on("value", snapshot => {
+        let tbody = $('#requests-table tbody');
+        tbody.empty();
+        let totalShortage = 0; let count = 0;
+
+        snapshot.forEach(child => {
+            const d = child.val();
+            totalShortage += parseInt(d.units || 0); count++;
+            let actionButton = `<button class="btn btn-sm btn-success supply-shortage-btn" data-id="${child.key}" data-hub="${d.nodeName}" data-group="${d.group}" data-units="${d.units}" data-price="${d.price}" data-address="${d.address || 'N/A'}" data-phone="${d.phone || 'N/A'}">VIEW REQUEST</button>`;
+            if(d.nodeName === myHubName) actionButton = `<span class="badge badge-light border">YOUR REQUEST</span>`;
+            tbody.append(`<tr><td><b>${d.nodeName || 'Network Hub'}</b><br><small class="text-muted">${d.address || 'Mumbai'}</small></td><td><span class="badge badge-light border px-2">${d.group || 'N/A'}</span><br><small class="text-danger">${d.note || 'Urgent'}</small></td><td class="font-weight-800 text-danger">${d.units || 0} U</td><td class="font-weight-bold text-danger">${d.price || 0} CR</td><td>${actionButton}</td></tr>`);
+        });
+        if(count === 0) tbody.html('<tr><td colspan="5" class="text-muted py-4">No shortage requests currently listed.</td></tr>');
+        $('#market-shortage-units').text(totalShortage);
+    });
+
+    // C. Immutable Blockchain Ledger
+    db.ref("blockchain_ledger").on("value", snapshot => {
+        let tableBody = $('#ledger-tbody'); tableBody.empty();
+        $('#ledger-count').text(snapshot.numChildren()); $('#total-exchanges').text(snapshot.numChildren());
+        snapshot.forEach(child => {
+            const d = child.val();
+            const dateStr = d.timestamp ? new Date(parseInt(d.timestamp)).toLocaleString() : "N/A";
+            tableBody.prepend(`<tr><td><span class="hash-tag">${(d.hash || "").substring(0, 20)}...</span></td><td class="small">${dateStr}</td><td class="font-weight-bold text-success">${d.from || "Unknown"}</td><td class="font-weight-bold text-info">${d.to || "Unknown"}</td><td class="small font-weight-bold">${d.payload || "Data Block"}</td><td class="text-success small font-weight-800"><i class="fas fa-check-circle"></i> VERIFIED</td></tr>`);
+        });
+    });
+
+    // --- 4. MARKETPLACE ACTIONS ---
+
+    // ==========================================
+    // ACTION 1: RESPONDING TO A SURPLUS OFFER
+    // ==========================================
+    $(document).on('click', '.req-surplus-btn', function() {
+        $('#rs-target-hub').text($(this).data('hub'));
+        $('#rs-units').text($(this).data('units') + " Units of " + $(this).data('group'));
+        $('#rs-listed-price').text($(this).data('rate') + " CR"); 
+        $('#rs-original-price').val($(this).data('rate'));
+        $('#rs-offer-price').val($(this).data('rate')); 
+        
+        $('#rs-offer-id').val($(this).data('id'));
+        $('#rs-payload').val(`${$(this).data('units')} Units [${$(this).data('group')}]`);
+        
+        // Save target contact info to pass to the trade object
+        $('#rs-target-address').val($(this).data('address'));
+        $('#rs-target-phone').val($(this).data('phone'));
+
+        $('#requestSurplusModal').modal('show');
+    });
+
+    // 1A. Negotiate
+    $('#btn-confirm-request').on('click', function() {
+        const targetHub = $('#rs-target-hub').text();
+        const offerPrice = $('#rs-offer-price').val();
+        
+        db.ref("interhub_trades").push({
+            from_hub: myHubName, from_uid: uid, to_hub: targetHub,
+            from_address: myHubAddress, from_phone: myHubPhone, 
+            payload: $('#rs-payload').val(), price: offerPrice, 
+            status: "NEGOTIATING", last_actor: myHubName, last_actor_side: "requester", last_actor_uid: uid,
+            offer_id: $('#rs-offer-id').val(), timestamp: Date.now()
+        }).then(() => {
+            $('#requestSurplusModal').modal('hide');
+            alert(`Counter Offer of ${offerPrice} CR sent to ${targetHub}. Check your Hub Dashboard to wait for their reply.`);
+        });
+    });
+
+    // 1B. Accept Instantly via Secure Hashing
+    $('#btn-instant-accept-surplus').on('click', async function() {
+        if(confirm("Are you sure you want to accept their exact listed price and finalize this trade immediately?")) {
+            const btn = $(this);
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Securing...');
+            const targetHub = $('#rs-target-hub').text();
+            const agreedPrice = $('#rs-original-price').val();
+            const payloadData = $('#rs-payload').val();
+
+            try {
+                // Request Hash from Python
+                const response = await fetch('/api/blockchain/generate_hash', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ from_hub: myHubName, to_hub: targetHub, payload: payloadData })
+                });
+
+                if (!response.ok) throw new Error("Backend hashing failed");
+                const hashData = await response.json();
+
+                // Write to Ledger
+                await db.ref("blockchain_ledger").push({ hash: hashData.hash, from: myHubName, to: targetHub, payload: payloadData, timestamp: hashData.timestamp });
+
+                // Create instantly accepted trade for audit logging
+                await db.ref("interhub_trades").push({
+                    from_hub: myHubName, from_uid: uid, to_hub: targetHub,
+                    from_address: myHubAddress, from_phone: myHubPhone,
+                    payload: payloadData, price: agreedPrice, final_price: agreedPrice,
+                    status: "ACCEPTED", offer_id: $('#rs-offer-id').val(), timestamp: Date.now()
+                });
+
+                $('#requestSurplusModal').modal('hide'); 
+                alert("Trade instantly finalized and Cryptographically Secured!");
+            } catch (error) {
+                alert("Error securing transaction: " + error.message);
+            } finally {
+                btn.prop('disabled', false).text('ACCEPT INSTANTLY');
+            }
+        }
+    });
+
+    // ==========================================
+    // ACTION 2: RESPONDING TO A SHORTAGE REQUEST
+    // ==========================================
+    $(document).on('click', '.supply-shortage-btn', function() {
+        $('#ss-target-hub').text($(this).data('hub'));
+        $('#ss-units').text($(this).data('units') + " Units of " + $(this).data('group'));
+        $('#ss-listed-price').text($(this).data('price') + " CR"); 
+        $('#ss-original-price').val($(this).data('price'));
+        $('#ss-offer-price').val($(this).data('price')); 
+
+        $('#ss-request-id').val($(this).data('id'));
+        $('#ss-payload').val(`${$(this).data('units')} Units [${$(this).data('group')}]`);
+        
+        // Save target contact info to pass to the trade object
+        $('#ss-target-address').val($(this).data('address'));
+        $('#ss-target-phone').val($(this).data('phone'));
+
+        $('#supplyShortageModal').modal('show');
+    });
+
+    // 2A. Negotiate
+    $('#btn-confirm-supply').on('click', function() {
+        const targetHub = $('#ss-target-hub').text();
+        const offerPrice = $('#ss-offer-price').val();
+
+        db.ref("interhub_trades").push({
+            from_hub: myHubName, from_uid: uid, to_hub: targetHub, 
+            from_address: myHubAddress, from_phone: myHubPhone,
+            payload: $('#ss-payload').val(), price: offerPrice, 
+            status: "NEGOTIATING", last_actor: myHubName, last_actor_side: "receiver", last_actor_uid: uid,
+            request_id: $('#ss-request-id').val(), timestamp: Date.now()
+        }).then(() => {
+            $('#supplyShortageModal').modal('hide');
+            alert(`Counter Offer of ${offerPrice} CR sent to ${targetHub}. Check your Hub Dashboard to wait for their reply.`);
+        });
+    });
+
+    // 2B. Accept Instantly via Secure Hashing
+    $('#btn-instant-accept-shortage').on('click', async function() {
+        if(confirm("Are you sure you want to supply them at their exact requested price and finalize this trade immediately?")) {
+            const btn = $(this);
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Securing...');
+            const targetHub = $('#ss-target-hub').text();
+            const agreedPrice = $('#ss-original-price').val();
+            const payloadData = $('#ss-payload').val();
+
+            try {
+                // Request Hash from Python
+                const response = await fetch('/api/blockchain/generate_hash', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ from_hub: myHubName, to_hub: targetHub, payload: payloadData })
+                });
+
+                if (!response.ok) throw new Error("Backend hashing failed");
+                const hashData = await response.json();
+
+                // Write to Ledger
+                await db.ref("blockchain_ledger").push({ hash: hashData.hash, from: myHubName, to: targetHub, payload: payloadData, timestamp: hashData.timestamp });
+
+                // Create instantly accepted trade for audit logging
+                await db.ref("interhub_trades").push({
+                    from_hub: targetHub, from_uid: "market_link", to_hub: myHubName, 
+                    from_address: $('#ss-target-address').val() || "N/A", from_phone: $('#ss-target-phone').val() || "N/A",
+                    payload: payloadData, price: agreedPrice, final_price: agreedPrice,
+                    status: "ACCEPTED", request_id: $('#ss-request-id').val(), timestamp: Date.now()
+                });
+
+                $('#supplyShortageModal').modal('hide'); 
+                alert("Trade instantly finalized and Cryptographically Secured!");
+            } catch (error) {
+                alert("Error securing transaction: " + error.message);
+            } finally {
+                btn.prop('disabled', false).text('ACCEPT INSTANTLY');
+            }
+        }
+    });
+
+    // Logout
+    $('#logout-btn').on('click', () => {
+        if(confirm("Disconnect from network?")) {
+            localStorage.clear();
+            firebase.auth().signOut().then(() => window.location.href = 'login.html');
+        }
+    });
+});
+</script>
+</body>
+</html>
