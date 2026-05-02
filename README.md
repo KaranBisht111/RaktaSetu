@@ -56,14 +56,14 @@ The system integrates **Deep Learning (LSTM)** for demand forecasting, **XGBoost
 ### 📊 System Architecture
 
 <p align="center">
-  <img src="images/architecture.png" width="700">
+  <img src="images/architecture.jpg" width="700">
 </p>
 
 --- 
 ## 🔄 System Workflow
 
 <p align="center">
-  <img src="images/flowchart.png" width="700">
+  <img src="images/flowchart.jpg" width="700">
 </p>
 
 ---
