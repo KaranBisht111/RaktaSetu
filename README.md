@@ -115,6 +115,10 @@ The system integrates **Deep Learning (LSTM)** for demand forecasting, **XGBoost
   <img src="images/admin_dashboard.png" width="700">
 </p>
 
+### 🔄 Marketplace Module
+<p align="center">
+  <img src="images/marketplace.png" width="700">
+</p>
 ---
 
 ## 🛠️ Tech Stack
